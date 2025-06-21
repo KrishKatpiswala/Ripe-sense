@@ -1,0 +1,304 @@
+<!-- templates/result.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango Quality Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff9a56, #ffad56);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 90%;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .image-section {
+            text-align: center;
+        }
+        
+        .uploaded-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            border-left: 5px solid #ff9a56;
+        }
+        
+        .prediction {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prediction.over-ripe {
+            color: #dc3545;
+        }
+        
+        .prediction.perfect-ripe {
+            color: #28a745;
+        }
+        
+        .prediction.under-ripe {
+            color: #ffc107;
+        }
+        
+        .confidence {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .confidence-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9a56, #ff8a40);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .all-predictions {
+            background: #e8f4fd;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .all-predictions h3 {
+            color: #007bff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .recommendation {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .recommendation h3 {
+            color: #155724;
+            margin-bottom: 0.5rem;
+        }
+        
+        .recommendation p {
+            color: #155724;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff9a56, #ff8a40);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 154, 86, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+        
+        .actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff9a56;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥭 Analysis Results</h1>
+        </div>
+        
+        <div class="results-grid">
+            <div class="image-section">
+                <h3>Uploaded Image</h3>
+                <img src="data:image/png;base64,{{ image_data }}" alt="Uploaded Mango" class="uploaded-image">
+            </div>
+            
+            <div class="results-section">
+                <div class="result-card">
+                    <div class="prediction {{ prediction.lower().replace('_', '-') }}">
+                        {{ prediction.replace('_', ' ').title() }}
+                    </div>
+                    <div class="confidence">
+                        Confidence: {{ confidence }}
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: {{ confidence }}"></div>
+                    </div>
+                </div>
+                
+                {% if all_predictions %}
+                <div class="all-predictions">
+                    <h3>All Predictions</h3>
+                    {% for class_name, probability in all_predictions.items() %}
+                    <div class="prediction-item">
+                        <span>{{ class_name.replace('_', ' ').title() }}</span>
+                        <span>{{ (probability * 100)|round(1) }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="recommendation">
+            <h3>🍽️ Recommendation</h3>
+            {% if prediction == 'Perfect_Ripe' %}
+                <p><strong>Perfect for eating!</strong> This mango is at its peak ripeness with optimal sweetness and texture.</p>
+                <p>💡 <em>Best consumed within 1-2 days for maximum flavor.</em></p>
+            {% elif prediction == 'Under_Ripe' %}
+                <p><strong>Needs more time to ripen.</strong> This mango is still developing its sweetness.</p>
+                <p>💡 <em>Store at room temperature for 2-5 days. Place in a paper bag with a banana to speed up ripening.</em></p>
+            {% elif prediction == 'Over_Ripe' %}
+                <p><strong>Past peak ripeness.</strong> This mango may be too soft for fresh eating but perfect for smoothies or cooking.</p>
+                <p>💡 <em>Use immediately for smoothies, desserts, or mango puree. Can be frozen for later use.</em></p>
+            {% endif %}
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">{{ confidence }}</div>
+                <div class="stat-label">Confidence</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ prediction.replace('_', ' ') }}</div>
+                <div class="stat-label">Classification</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">AI Powered</div>
+                <div class="stat-label">Detection Method</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn">🔄 Analyze Another Mango</a>
+            <a href="/train" class="btn btn-secondary">🎯 Retrain Model</a>
+        </div>
+    </div>
+
+    <script>
+        // Animate confidence bar on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const confidenceFill = document.querySelector('.confidence-fill');
+            const confidence = '{{ confidence }}';
+            
+            // Extract percentage value
+            const percentValue = confidence.replace('%', '');
+            
+            // Animate the bar
+            setTimeout(() => {
+                confidenceFill.style.width = percentValue + '%';
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!-- templates/train.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Mango Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff9a56, #ffad56);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .header {
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .train-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .requirements {
+            background: #e8f4fd;
+            border-left: 4px solid #007bff;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 5px;
+            text-align: left;
+        }
+        
+        .requirements h3 {
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
+        .requirements ul {
+            margin-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .requirements li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .folder-structure {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: monospace;
+            text-align: left;
+            margin: 1rem 0;
+            white-space: pre-line;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff9a56, #ff8a40);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 154, 86, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+        
+        .progress {
+            display: none;
+            margin: 2rem 0;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9a56, #ff8a40);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff9a56;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="train-icon">🎯</div>
+            <h1>Train Model</h1>
+            <p>Train the AI model to recognize mango quality</p>
+        </div>
+        
+        <div class="requirements">
+            <h3>📋 Requirements</h3>
+            <p><strong>Before training, ensure you have:</strong></p>
+            <ul>
+                <li>At least 200 images per category</li>
+                <li>Images organized in the correct folder structure</li>
+                <li>Good quality images with proper lighting</li>
+                <li>Sufficient disk space (model file ~50MB)</li>
+            </ul>
+            
+            <p><strong>Required folder structure:</strong></p>
+            <div class="folder-structure">Grading_dataset/
+├── Over_Ripe/
+│   └── (200+ mango images)
+├── Perfect_Ripe/
+│   └── (200+ mango images)
+└── Under_Ripe/
+    └── (200+ mango images)</div>
+        </div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="progress" id="progress">
+            <div class="spinner"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Initializing training...</div>
+        </div>
+        
+        <button class="btn" id="train-btn" onclick="startTraining()">
+            🚀 Start Training
+        </button>
+        
+        <a href="/" class="btn btn-secondary">
+            ⬅️ Back to Home
+        </a>
+        
+        <div class="requirements" style="margin-top: 2rem;">
+            <h3>⚠️ Training Notes</h3>
+            <ul>
+                <li>Training will take 15-30 minutes depending on your hardware</li>
+                <li>Do not close this browser tab during training</li>
+                <li>The model will be saved automatically when training completes</li>
+                <li>You can monitor progress in the progress bar above</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+        
+        function showProgress() {
+            document.getElementById('progress').style.display = 'block';
+        }
+        
+        function hideProgress() {
+            document.getElementById('progress').style.display = 'none';
+        }
+        
+        function updateProgress(percent, text) {
+            document.getElementById('progress-fill').style.width = percent + '%';
+            document.getElementById('progress-text').textContent = text;
+        }
+        
+        async function startTraining() {
+            const trainBtn = document.getElementById('train-btn');
+            
+            // Disable button and show progress
+            trainBtn.disabled = true;
+            hideStatus();
+            showProgress();
+            
+            try {
+                showStatus('Starting model training...', 'info');
+                updateProgress(10, 'Preparing data...');
+                
+                const response = await fetch('/train', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        updateProgress(100, 'Training completed successfully!');
+                        showStatus('✅ Model trained successfully! You can now use it for predictions.', 'success');
+                        
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 3000);
+                    } else {
+                        hideProgress();
+                        showStatus('❌ Training failed: ' + result.error, 'error');
+                    }
+                } else {
+                    hideProgress();
+                    showStatus('❌ Server error occurred during training.', 'error');
+                }
+                
+            } catch (error) {
+                hideProgress();
+                showStatus('❌ Network error: ' + error.message, 'error');
+            } finally {
+                trainBtn.disabled = false;
+            }
+        }
+        
+        // Simulate progress during training (since we can't get real progress from the server)
+        function simulateProgress() {
+            let progress = 10;
+            const interval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 10;
+                    updateProgress(progress, `Training in progress... ${Math.round(progress)}%`);
+                } else {
+                    clearInterval(interval);
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

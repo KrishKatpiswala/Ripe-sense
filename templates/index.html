@@ -1,0 +1,364 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango Quality Grading System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff9a56, #ffad56);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .header {
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .mango-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ff9a56;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #ff8a40;
+            background: #fff8f5;
+        }
+        
+        .upload-area.dragover {
+            border-color: #ff7a30;
+            background: #fff0e6;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .upload-text {
+            color: #666;
+            margin: 1rem 0;
+        }
+        
+        .file-info {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff9a56, #ff8a40);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 154, 86, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+        
+        .loading {
+            display: none;
+            margin: 1rem 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff9a56;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .instructions {
+            background: #e8f4fd;
+            border-left: 4px solid #007bff;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            color: #007bff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .instructions ul {
+            margin-left: 1rem;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="mango-icon">🥭</div>
+            <h1>Mango Quality Grader</h1>
+            <p>AI-powered mango ripeness detection</p>
+        </div>
+        
+        <form id="upload-form" enctype="multipart/form-data">
+            <div class="upload-area" id="upload-area">
+                <input type="file" id="file-input" name="file" accept="image/*">
+                <div class="upload-content">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
+                    <div class="upload-text">
+                        <strong>Click to upload</strong> or drag and drop<br>
+                        <small>Supports: JPG, PNG, JPEG (Max 10MB)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="file-info" id="file-info">
+                <img id="preview-image" class="preview-image" style="display: none;">
+                <div id="file-details"></div>
+            </div>
+            
+            <div class="error-message" id="error-message"></div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing mango quality...</p>
+            </div>
+            
+            <button type="submit" class="btn" id="analyze-btn" disabled>
+                🔍 Analyze Mango Quality
+            </button>
+            
+            <a href="/train" class="btn btn-secondary">
+                🎯 Train Model
+            </a>
+        </form>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ul>
+                <li>Upload a clear image of a mango</li>
+                <li>Ensure good lighting and focus</li>
+                <li>The AI will classify as: Over-ripe, Perfect-ripe, or Under-ripe</li>
+                <li>If no model is found, train it first using the "Train Model" button</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const previewImage = document.getElementById('preview-image');
+        const fileDetails = document.getElementById('file-details');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const uploadForm = document.getElementById('upload-form');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('error-message');
+
+        // Upload area click handler
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change handler
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file.');
+                return;
+            }
+
+            // Validate file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB.');
+                return;
+            }
+
+            hideError();
+
+            // Show file info
+            fileInfo.style.display = 'block';
+            fileDetails.innerHTML = `
+                <strong>${file.name}</strong><br>
+                Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB<br>
+                Type: ${file.type}
+            `;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Enable analyze button
+            analyzeBtn.disabled = false;
+        }
+
+        // Form submission
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!fileInput.files[0]) {
+                showError('Please select an image first.');
+                return;
+            }
+
+            // Show loading
+            loading.style.display = 'block';
+            analyzeBtn.disabled = true;
+            hideError();
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const result = await response.json();
+                        if (result.error) {
+                            showError(result.error);
+                        }
+                    } else {
+                        // HTML response - redirect to results
+                        const html = await response.text();
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    }
+                } else {
+                    showError('Server error occurred. Please try again.');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
